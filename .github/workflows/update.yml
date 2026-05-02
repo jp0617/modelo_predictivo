@@ -1,6 +1,8 @@
 name: Update Data
 
 on:
+  schedule:
+    - cron: "05 16 * * *"
   workflow_dispatch:   # botón manual
 
 jobs:
