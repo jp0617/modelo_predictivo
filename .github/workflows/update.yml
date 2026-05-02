@@ -20,4 +20,4 @@ jobs:
         run: pip install requests
 
       - name: Ejecutar script
-        run: python data_actual.py
+        run: python data/data_actual.py
