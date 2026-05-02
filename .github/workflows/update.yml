@@ -1,0 +1,23 @@
+name: Update Data
+
+on:
+  workflow_dispatch:   # botón manual
+
+jobs:
+  run-script:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Clonar repo
+        uses: actions/checkout@v3
+
+      - name: Instalar Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+
+      - name: Instalar requests
+        run: pip install requests
+
+      - name: Ejecutar script
+        run: python data_actual.py
