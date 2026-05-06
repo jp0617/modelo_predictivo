@@ -1,11 +1,29 @@
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import col, lit
+from pyspark.sql.functions import col, lit, coalesce, create_map
+from pyspark.sql.types import StringType
+import sys, os
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+from data.normalize import TEAM_NAME_MAP
 
 # Crear sesión de Spark
 spark = SparkSession.builder.getOrCreate()
 
 # 1. Leer la tabla consolidada de la capa silver
 df_consolidado = spark.table("workspace.silver.consolidado_premier")
+
+# Aplicar normalización de nombres usando el mismo mapa central
+_map_entries = []
+for k, v in TEAM_NAME_MAP.items():
+    _map_entries += [lit(k), lit(v)]
+_name_map = create_map(*_map_entries)
+
+def normalize_col(c):
+    """Devuelve el nombre normalizado; si no está en el mapa, conserva el original."""
+    return coalesce(_name_map[col(c)], col(c)).alias(c)
+
+df_consolidado = df_consolidado.withColumn("HomeTeam", normalize_col("HomeTeam")) \
+                               .withColumn("AwayTeam", normalize_col("AwayTeam"))
 
 # 2. Definir columnas comunes
 cols_comunes = ['season', 'MatchDate', 'FullTimeResult', 'HalfTimeResult']

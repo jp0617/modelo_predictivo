@@ -1,7 +1,12 @@
 import pandas as pd
+import sys
+import os
 
-df1 =pd.read_csv('data/epl_final.csv')
-df2 = pd.read_csv('data/PL_2025_actual.csv')
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+from data.normalize import normalize_df
+
+df1 = normalize_df(pd.read_csv('data/epl_final.csv'))
+df2 = normalize_df(pd.read_csv('data/PL_2025_actual.csv'))
 
 resultado = pd.concat([df1, df2], axis=0)
 
@@ -24,5 +29,5 @@ away_df['Venue'] = 'Away'
 df_final = pd.concat([home_df, away_df], axis=0).sort_values(by=['MatchDate', 'Team'])
 
 # Ejemplo: Ver todos los datos de un equipo específico
-print(df_final[df_final['Team'] == 'Man City'])
+print(df_final[df_final['Team'] == 'Manchester City FC'])
 
