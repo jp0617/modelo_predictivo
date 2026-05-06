@@ -3,7 +3,17 @@ import csv
 import json
 from datetime import datetime
 
-url = "https://api.football-data.org/v4/competitions/PL/matches?season=2025"
+
+
+if datetime.now().month >= 6:
+    season = datetime.now().year
+else:    
+    season = datetime.now().year - 1
+    
+print(f"Obteniendo datos de la temporada {season}...")
+
+
+url = f"https://api.football-data.org/v4/competitions/PL/matches?season={season}"
 
 headers = {
     'X-Auth-Token': 'd272ac5581b44517a3850d3e374915f8'
@@ -77,7 +87,7 @@ def parse_match(match):
     stats_lookup = extract_stats(match)
 
     row = {
-        "Season": 2025,
+        "Season": season,
         "MatchDate": match_date,
         "HomeTeam": match.get("homeTeam", {}).get("name"),
         "AwayTeam": match.get("awayTeam", {}).get("name"),
@@ -99,7 +109,7 @@ def parse_match(match):
 matches = data.get("matches", [])
 rows = [parse_match(m) for m in matches]
 
-output_path = "data/PL_2025_actual.csv"
+output_path = f"data/PL_{season}_actual.csv"
 with open(output_path, "w", newline="", encoding="utf-8") as f:
     writer = csv.DictWriter(f, fieldnames=COLUMNS)
     writer.writeheader()
