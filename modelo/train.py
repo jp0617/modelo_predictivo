@@ -2,18 +2,22 @@ import pandas as pd
 import numpy as np
 import joblib
 import os
+import sys
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import accuracy_score, classification_report
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+from data.normalize import normalize_df
 
 N_GAMES = 5  # últimos partidos para calcular estadísticas
 
 
 def load_data():
     base = os.path.join(os.path.dirname(__file__), '..', 'data')
-    df1 = pd.read_csv(os.path.join(base, 'epl_final.csv'))
-    df2 = pd.read_csv(os.path.join(base, 'PL_2025_actual.csv'))
+    df1 = normalize_df(pd.read_csv(os.path.join(base, 'epl_final.csv')))
+    df2 = normalize_df(pd.read_csv(os.path.join(base, 'PL_2025_actual.csv')))
     df = pd.concat([df1, df2], axis=0).reset_index(drop=True)
     df['MatchDate'] = pd.to_datetime(df['MatchDate'])
     df = df.sort_values('MatchDate').reset_index(drop=True)

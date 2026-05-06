@@ -2,7 +2,11 @@ import pandas as pd
 import numpy as np
 import joblib
 import os
+import sys
 from rapidfuzz import process, fuzz, utils as fuzz_utils
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+from data.normalize import normalize_df
 
 N_GAMES = 5
 FUZZY_THRESHOLD = 75  # score mínimo para aceptar una coincidencia
@@ -26,8 +30,8 @@ def _load_artifacts():
 def _build_team_stats():
     """Construye el historial reciente de cada equipo a partir de los CSVs."""
     base = os.path.join(os.path.dirname(__file__), '..', 'data')
-    df1 = pd.read_csv(os.path.join(base, 'epl_final.csv'))
-    df2 = pd.read_csv(os.path.join(base, 'PL_2025_actual.csv'))
+    df1 = normalize_df(pd.read_csv(os.path.join(base, 'epl_final.csv')))
+    df2 = normalize_df(pd.read_csv(os.path.join(base, 'PL_2025_actual.csv')))
     df = pd.concat([df1, df2], axis=0).reset_index(drop=True)
     df['MatchDate'] = pd.to_datetime(df['MatchDate'])
     df = df.sort_values('MatchDate').reset_index(drop=True)

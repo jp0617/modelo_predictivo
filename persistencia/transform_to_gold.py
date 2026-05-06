@@ -57,5 +57,5 @@ print("Datos transformados y guardados en workspace.gold.equipos_premier")
 print(f"Total de registros: {df_final.count()}")
 
 # Ejemplo: Ver datos de un equipo específico
-print("\nEjemplo - Datos de Man City:")
-df_final.filter(col('Team') == 'Man City').show(10)
+print("\nEjemplo - Datos de Manchester City FC:")
+df_final.filter(col('Team') == 'Manchester City FC').show(10)

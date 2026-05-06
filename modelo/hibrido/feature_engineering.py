@@ -207,7 +207,7 @@ if __name__ == "__main__":
     print("Testing feature engineering...")
     
     try:
-        features = get_match_features("Bournemouth", "Crystal Palace")
+        features = get_match_features("AFC Bournemouth", "Crystal Palace FC")
         print("\n✓ Características calculadas exitosamente:")
         for k, v in features.items():
             print(f"  {k}: {v}")
