@@ -9,6 +9,7 @@ Uso standalone: lee directamente de los CSV del directorio data/.
 """
 
 import os
+from unittest import result
 import numpy as np
 import pandas as pd
 from scipy.stats import poisson
@@ -430,11 +431,29 @@ def print_prediction(result: dict) -> None:
           f"({result['confidence']*100:.1f}%)")
     print(f"{sep}\n")
 
+def print_json_prediction(home_team: str,
+    away_team: str) -> None:
+    """Imprime el resultado de la predicción en formato JSON."""
+    result = simulate_match(home_team, away_team)
+    
+    return {
+            "Equipo_local": result['home_team'],
+            "Equipo_visitante": result['away_team'],
+            "Victoria_local": f"{result['probabilities']['home_win']*100:.1f}%",
+            "Empate": f"{result['probabilities']['draw']*100:.1f}%",
+            "Victoria_visitante": f"{result['probabilities']['away_win']*100:.1f}%",
+            "Goles_esperados_local": result['expected_goals']['home'],
+            "Goles_esperados_visitante": result['expected_goals']['away'],
+            "Over_2.5": f"{result['over_under']['over_2_5']*100:.1f}%",
+            "Under_2.5": f"{result['over_under']['under_2_5']*100:.1f}%",
+            "BTTS": f"{result['btts']*100:.1f}%",
+            "Prediccion_final": result['predicted_result_label'],
+            "Confianza": f"{result['confidence']*100:.1f}%",
+    }
 
 if __name__ == "__main__":
     print("Cargando datos...")
     data = load_all_data()
     print(f"  {len(data)} partidos cargados.\n")
 
-    resultado = simulate_match("Arsenal FC", "Chelsea FC", df=data)
-    print_prediction(resultado)
+    print_prediction(simulate_match("Manchester City", "Cristal palace", df=data))

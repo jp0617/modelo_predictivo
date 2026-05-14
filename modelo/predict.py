@@ -203,13 +203,13 @@ def predict(home_team: str, away_team: str) -> dict:
     result = {c: round(float(p), 4) for c, p in zip(classes, proba)}
 
     return {
-        'home_team': home_resolved,
-        'away_team': away_resolved,
-        'probabilities': {
-            'home_win': result.get('H', 0)*100,
-            'draw': result.get('D', 0)*100,
-            'away_win': result.get('A', 0)*100,
+        'Equipo_local': home_resolved,
+        'Equipo_visitante': away_resolved,
+        'Probabilidades': {
+            'Victoria local': f"{result.get('H', 0)*100:.1f}%",
+            'Empate': f"{result.get('D', 0)*100:.1f}%",
+            'Victoria visitante': f"{result.get('A', 0)*100:.1f}%",
         },
-        'home_recent_stats': {k: round(v, 3) if v is not None else None for k, v in home_s.items()},
-        'away_recent_stats': {k: round(v, 3) if v is not None else None for k, v in away_s.items()},
+        'Estadísticas recientes del equipo local': {k: round(v, 3) if v is not None else None for k, v in home_s.items()},
+        'Estadísticas recientes del equipo visitante': {k: round(v, 3) if v is not None else None for k, v in away_s.items()},
     }
