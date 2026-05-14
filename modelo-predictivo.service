@@ -4,7 +4,7 @@ After=network.target
 
 [Service]
 User=YOUR_USER
-WorkingDirectory=/YOUR/SSH/PATH
+WorkingDirectory=/home/jp0617/proyectos/modelo
 ExecStart=/usr/bin/python3 index.py
 Restart=always
 RestartSec=5
