@@ -1,0 +1,14 @@
+[Unit]
+Description=Modelo Predictivo Flask API
+After=network.target
+
+[Service]
+User=YOUR_USER
+WorkingDirectory=/YOUR/SSH/PATH
+ExecStart=/usr/bin/python3 index.py
+Restart=always
+RestartSec=5
+Environment=FLASK_ENV=production
+
+[Install]
+WantedBy=multi-user.target
