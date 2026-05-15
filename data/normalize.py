@@ -77,11 +77,9 @@ TEAM_NAME_MAP: dict[str, str] = {
     "Wolverhampton Wanderers": "Wolverhampton Wanderers FC",
     "Tottenham Hotspur": "Tottenham Hotspur FC",
     "Brighton & Hove Albion": "Brighton & Hove Albion FC",
-    "Aston Villa": "Aston Villa FC",
     "Leicester City": "Leicester City FC",
     "Leeds United": "Leeds United FC",
     "Sheffield Utd": "Sheffield United FC",
-    "Nott'm Forest": "Nottingham Forest FC",
     # ── Nombres ya correctos (identidad, evita KeyError) ──────────────────
     "Arsenal FC": "Arsenal FC",
     "Aston Villa FC": "Aston Villa FC",

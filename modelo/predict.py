@@ -30,9 +30,9 @@ def _load_artifacts():
 def _build_team_stats():
     """Construye el historial reciente de cada equipo a partir de los CSVs."""
     base = os.path.join(os.path.dirname(__file__), '..', 'data')
-    df1 = normalize_df(pd.read_csv(os.path.join(base, 'epl_final.csv')))
-    df2 = normalize_df(pd.read_csv(os.path.join(base, 'PL_2025_actual.csv')))
-    df = pd.concat([df1, df2], axis=0).reset_index(drop=True)
+    csv_files = sorted(f for f in os.listdir(base) if f.endswith('.csv'))
+    frames = [normalize_df(pd.read_csv(os.path.join(base, f))) for f in csv_files]
+    df = pd.concat(frames, axis=0).reset_index(drop=True)
     df['MatchDate'] = pd.to_datetime(df['MatchDate'])
     df = df.sort_values('MatchDate').reset_index(drop=True)
 
