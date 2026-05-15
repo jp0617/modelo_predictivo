@@ -1,3 +1,4 @@
+import os
 from flask import Flask, jsonify
 from flask_cors import CORS
 import pandas as pd
@@ -39,4 +40,3 @@ def team_stats_endpoint(team):
         return jsonify(result)
     except ValueError as e:
         return jsonify({'error': str(e)}), 404
-

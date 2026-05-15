@@ -4,7 +4,7 @@ import joblib
 import os
 import sys
 from rapidfuzz import process, fuzz, utils as fuzz_utils
-
+from modelo.train import train
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 from data.normalize import normalize_df
 
@@ -163,6 +163,19 @@ def top5() -> list:
 
 def init():
     """Carga el modelo y precalcula historial. Llamar al iniciar la app."""
+    model_dir = os.path.dirname(__file__)
+    print(model_dir)
+    model_path = os.path.join(model_dir, 'model.pkl')
+  
+    print(f"Buscando modelo en {model_path}...")
+  
+    if not os.path.exists(model_path):
+        print("No se encontró el modelo entrenado. Entrenando nuevo modelo...")
+        train()
+        print("Modelo entrenado y guardado.")
+    else:
+        print("Modelo encontrado. Cargando artefactos...")
+        print("Artefactos cargados. Listo para predecir.")
     _load_artifacts()
     _get_histories()
 

@@ -44,7 +44,13 @@ def rolling_team_stats(df, team_col, goals_scored_col, goals_conceded_col,
         if recent:
             goals_avg = np.mean([h['goals_scored'] for h in recent])
             conceded_avg = np.mean([h['goals_conceded'] for h in recent])
-            shots_avg = np.mean([h['shots'] for h in recent]) if any(h['shots'] is not None for h in recent) else np.nan
+            
+            # --- CORRECCIÓN AQUÍ ---
+            # Filtramos únicamente los valores numéricos ignorando los None antes de calcular la media
+            valid_shots = [h['shots'] for h in recent if h['shots'] is not None]
+            shots_avg = np.mean(valid_shots) if valid_shots else np.nan
+            # -----------------------
+            
             win_rate = np.mean([1 if h['result'] == result_win_val else 0 for h in recent])
             n_played = len(recent)
         else:
