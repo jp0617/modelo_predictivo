@@ -92,7 +92,43 @@ Al arrancar por primera vez, si no existe `modelo/model.pkl`, el modelo se entre
 
 ## Datos
 
-Los CSVs deben estar en `data/` y contener al menos estas columnas:
+### Fuentes
+
+| Archivo | Fuente | Cómo obtenerlo |
+|---------|--------|----------------|
+| `epl_final.csv` | [Kaggle — English Premier League Match Data 2000-2025](https://www.kaggle.com/datasets/marcohuiii/english-premier-league-epl-match-data-2000-2025) | Ver `data/Historico_PL.py` |
+| `PL_YYYY_actual.csv` | [football-data.org API v4](https://www.football-data.org/) | Ver `data/data_actual.py` |
+
+### Histórico de temporadas (`epl_final.csv`)
+
+Descarga automática vía `kagglehub`:
+
+```bash
+pip install kagglehub
+python data/Historico_PL.py
+```
+
+El script descarga el dataset de Kaggle y lo guarda en `data/epl_final.csv` (también lo copia a Unity Catalog Volume si se ejecuta en Databricks).
+
+### Temporada en curso (`PL_YYYY_actual.csv`)
+
+Se obtiene desde la API gratuita de [football-data.org](https://www.football-data.org/). Requiere registrarse para obtener un token gratuito:
+
+1. Crear cuenta en [football-data.org](https://www.football-data.org/) → obtener el API token.
+2. Reemplazar el token en `data/data_actual.py`:
+   ```python
+   headers = {'X-Auth-Token': 'TU_TOKEN_AQUI'}
+   ```
+3. Ejecutar el script:
+   ```bash
+   python data/data_actual.py
+   ```
+
+El script detecta automáticamente la temporada activa (año anterior si el mes es antes de junio) y guarda el resultado como `data/PL_YYYY_actual.csv`.
+
+### Estructura de columnas requerida
+
+Los CSVs deben contener al menos:
 
 ```
 Season, MatchDate, HomeTeam, AwayTeam,
