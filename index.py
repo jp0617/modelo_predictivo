@@ -210,3 +210,11 @@ def team_stats_endpoint(team):
         return jsonify(_sanitize(result))
     except ValueError as e:
         return jsonify({'error': str(e)}), 404
+
+
+@app.route('/status', methods=['GET'])
+def status():
+    try:
+         return {'status': 'ok'}
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 404
