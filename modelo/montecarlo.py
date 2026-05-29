@@ -13,6 +13,7 @@ from unittest import result
 import numpy as np
 import pandas as pd
 from scipy.stats import poisson
+from data.normalize import normalize_df
 
 # ─── Normalización de nombres ────────────────────────────────────────────────
 
@@ -94,37 +95,46 @@ def load_all_data() -> pd.DataFrame:
     Carga y une datos históricos + temporada actual,
     normalizando los nombres de equipos.
     """
-    hist = _load_csv("epl_final.csv")
-    current = _load_csv("PL_2025_actual.csv")
+    base = os.path.join(os.path.dirname(__file__), '..', 'data')
+    csv_files = sorted(f for f in os.listdir(base) if f.endswith('.csv'))
+    df = pd.concat(
+        [normalize_df(pd.read_csv(os.path.join(base, f))) for f in csv_files],
+        axis=0,
+    ).reset_index(drop=True)
 
-    # Normalizar nombres en histórico
-    hist["HomeTeam"] = hist["HomeTeam"].apply(normalize_team_name)
-    hist["AwayTeam"] = hist["AwayTeam"].apply(normalize_team_name)
-
-    # Normalizar nombres en temporada actual (ya suelen estar bien, pero por consistencia)
-    current["HomeTeam"] = current["HomeTeam"].apply(normalize_team_name)
-    current["AwayTeam"] = current["AwayTeam"].apply(normalize_team_name)
-
-    # Columnas mínimas necesarias
-    cols = ["Season", "MatchDate", "HomeTeam", "AwayTeam",
-            "FullTimeHomeGoals", "FullTimeAwayGoals", "FullTimeResult"]
-    df = pd.concat([hist[cols], current[cols]], ignore_index=True)
+    df["HomeTeam"] = df["HomeTeam"].apply(normalize_team_name)
+    df["AwayTeam"] = df["AwayTeam"].apply(normalize_team_name)
 
     df["MatchDate"] = pd.to_datetime(df["MatchDate"], errors="coerce")
     df["FullTimeHomeGoals"] = pd.to_numeric(df["FullTimeHomeGoals"], errors="coerce")
     df["FullTimeAwayGoals"] = pd.to_numeric(df["FullTimeAwayGoals"], errors="coerce")
 
-    # Solo partidos jugados (con goles registrados)
     df = df.dropna(subset=["FullTimeHomeGoals", "FullTimeAwayGoals"])
     return df.sort_values("MatchDate").reset_index(drop=True)
 
 
 # ─── Cálculo de fortalezas ────────────────────────────────────────────────────
 
-def calculate_team_strengths(df: pd.DataFrame) -> dict:
+def _weighted_mean(series: pd.Series, decay: float) -> float:
+    """Media ponderada con decaimiento exponencial: el partido más reciente pesa 1.0."""
+    n = len(series)
+    weights = np.array([decay ** (n - 1 - i) for i in range(n)])
+    return float(np.average(series.values, weights=weights))
+
+
+def calculate_team_strengths(
+    df: pd.DataFrame,
+    window: int = 38,
+    decay: float = 0.95,
+) -> dict:
     """
     Calcula la fortaleza ofensiva y defensiva de cada equipo
     relativa al promedio de la liga.
+
+    Args:
+        window: últimos N partidos por rol (local/visitante) que se consideran.
+        decay:  factor de decaimiento exponencial por partido hacia atrás
+                (0.95 → el partido más antiguo del window pesa ~decay^(window-1)).
 
     Retorna dict con claves de equipo y valores:
         home_attack, home_defense, away_attack, away_defense
@@ -136,33 +146,30 @@ def calculate_team_strengths(df: pd.DataFrame) -> dict:
     strengths = {}
 
     for team in teams:
-        home_matches = df[df["HomeTeam"] == team]
-        away_matches = df[df["AwayTeam"] == team]
+        # Últimos `window` partidos como local/visitante (df ya está ordenado por fecha)
+        home_matches = df[df["HomeTeam"] == team].tail(window)
+        away_matches = df[df["AwayTeam"] == team].tail(window)
 
-        # Goles marcados y concedidos como local
         if len(home_matches) > 0:
-            home_scored = home_matches["FullTimeHomeGoals"].mean()
-            home_conceded = home_matches["FullTimeAwayGoals"].mean()
-            home_attack = home_scored / avg_home_goals if avg_home_goals > 0 else 1.0
+            home_scored   = _weighted_mean(home_matches["FullTimeHomeGoals"], decay)
+            home_conceded = _weighted_mean(home_matches["FullTimeAwayGoals"], decay)
+            home_attack  = home_scored   / avg_home_goals if avg_home_goals > 0 else 1.0
             home_defense = home_conceded / avg_away_goals if avg_away_goals > 0 else 1.0
         else:
-            home_attack = 1.0
-            home_defense = 1.0
+            home_attack = home_defense = 1.0
 
-        # Goles marcados y concedidos como visitante
         if len(away_matches) > 0:
-            away_scored = away_matches["FullTimeAwayGoals"].mean()
-            away_conceded = away_matches["FullTimeHomeGoals"].mean()
-            away_attack = away_scored / avg_away_goals if avg_away_goals > 0 else 1.0
+            away_scored   = _weighted_mean(away_matches["FullTimeAwayGoals"], decay)
+            away_conceded = _weighted_mean(away_matches["FullTimeHomeGoals"], decay)
+            away_attack  = away_scored   / avg_away_goals if avg_away_goals > 0 else 1.0
             away_defense = away_conceded / avg_home_goals if avg_home_goals > 0 else 1.0
         else:
-            away_attack = 1.0
-            away_defense = 1.0
+            away_attack = away_defense = 1.0
 
         strengths[team] = {
-            "home_attack": home_attack,
+            "home_attack":  home_attack,
             "home_defense": home_defense,
-            "away_attack": away_attack,
+            "away_attack":  away_attack,
             "away_defense": away_defense,
         }
 

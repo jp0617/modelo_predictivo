@@ -128,45 +128,43 @@ PREDICT_PAGE = """
     });
 
     function renderResult(data) {
-      const p = data.predict || {};
-      const probs = p['Probabilidades'] || {};
-      const homeStats = p['Estadísticas recientes del equipo local'] || {};
-      const awayStats = p['Estadísticas recientes del equipo visitante'] || {};
       const mc = data.montecarlo || {};
 
-      const maxKey = Object.entries(probs).sort((a,b) => parseFloat(b[1]) - parseFloat(a[1]))[0]?.[0];
+      const labelMap = {
+        'Equipo_local':              'Equipo local',
+        'Equipo_visitante':          'Equipo visitante',
+        'Victoria_local':            'Victoria local',
+        'Empate':                    'Empate',
+        'Victoria_visitante':        'Victoria visitante',
+        'Goles_esperados_local':     'Goles esp. local',
+        'Goles_esperados_visitante': 'Goles esp. visitante',
+        'Over_2.5':                  'Over 2.5',
+        'Under_2.5':                 'Under 2.5',
+        'BTTS':                      'BTTS',
+        'Prediccion_final':          'Predicción final',
+        'Confianza':                 'Confianza',
+      };
 
-      const probBoxes = Object.entries(probs).map(([k,v]) =>
-        `<div class="prob-box ${k === maxKey ? 'highlight' : ''}">
-          <div class="label">${k}</div>
-          <div class="value">${v}</div>
-        </div>`
-      ).join('');
+      const highlightKeys = ['Victoria_local', 'Empate', 'Victoria_visitante', 'Confianza'];
+      const maxProb = Math.max(
+        parseFloat(mc['Victoria_local']) || 0,
+        parseFloat(mc['Empate']) || 0,
+        parseFloat(mc['Victoria_visitante']) || 0
+      );
 
-      const statRows = (obj) => Object.entries(obj)
-        .filter(([k]) => k !== 'n_played')
-        .map(([k,v]) => `<div class="stat-row"><span class="key">${k.replace(/_/g,' ')}</span><span class="val">${v !== null ? v : '—'}</span></div>`)
-        .join('');
-
-      let mcSection = '';
-      if (mc && Object.keys(mc).length) {
-        const mcRows = Object.entries(mc)
-          .filter(([k]) => !['home','away'].includes(k))
-          .map(([k,v]) => `<div class="stat-row"><span class="key">${k}</span><span class="val">${typeof v === 'number' ? (v >= 0 && v <= 1 ? (v*100).toFixed(1)+'%' : v.toFixed(2)) : v}</span></div>`)
-          .join('');
-        if (mcRows) mcSection = `<div class="section-title">Montecarlo</div><div class="stat-card" style="grid-column:1/-1">${mcRows}</div>`;
-      }
+      const boxes = Object.keys(labelMap).map(k => {
+        const val = mc[k] ?? '—';
+        const isHighlight = highlightKeys.includes(k) && parseFloat(val) === maxProb && k !== 'Confianza';
+        return `<div class="prob-box ${isHighlight ? 'highlight' : ''}">
+          <div class="label">${labelMap[k]}</div>
+          <div class="value">${val}</div>
+        </div>`;
+      }).join('');
 
       resultEl.style.display = 'block';
       resultEl.innerHTML = `
-        <div class="section-title">Probabilidades</div>
-        <div class="prob-grid">${probBoxes}</div>
-        <div class="section-title">Estadísticas recientes</div>
-        <div class="stats-grid">
-          <div class="stat-card"><h4>${p['Equipo_local'] || homeEl.value} (Local)</h4>${statRows(homeStats)}</div>
-          <div class="stat-card"><h4>${p['Equipo_visitante'] || awayEl.value} (Visitante)</h4>${statRows(awayStats)}</div>
-          ${mcSection}
-        </div>`;
+        <div class="section-title">Montecarlo</div>
+        <div class="prob-grid" style="grid-template-columns: repeat(3, 1fr)">${boxes}</div>`;
     }
 
     loadTeams();

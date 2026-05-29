@@ -16,9 +16,11 @@ N_GAMES = 5  # últimos partidos para calcular estadísticas
 
 def load_data():
     base = os.path.join(os.path.dirname(__file__), '..', 'data')
-    df1 = normalize_df(pd.read_csv(os.path.join(base, 'epl_final.csv')))
-    df2 = normalize_df(pd.read_csv(os.path.join(base, 'PL_2025_actual.csv')))
-    df = pd.concat([df1, df2], axis=0).reset_index(drop=True)
+    csv_files = sorted(f for f in os.listdir(base) if f.endswith('.csv'))
+    df = pd.concat(
+        [normalize_df(pd.read_csv(os.path.join(base, f))) for f in csv_files],
+        axis=0,
+    ).reset_index(drop=True)
     df['MatchDate'] = pd.to_datetime(df['MatchDate'])
     df = df.sort_values('MatchDate').reset_index(drop=True)
     # Conservar todos los partidos para construir historial, pero marcar los jugados
